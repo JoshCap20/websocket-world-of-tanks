@@ -11,9 +11,10 @@ export interface Tank {
     // For Game Logic
     health: number;
     level: number;
+    speed: number;
     kills: number;
     active: boolean;
-    lastShot: Date;
+    lastShot: number;
     isAI: boolean;
   }
   
