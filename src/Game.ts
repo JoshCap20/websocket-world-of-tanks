@@ -1,7 +1,7 @@
 import WebSocket, { Server } from 'ws';
 
 import { generateRandomObstacles, generatePlayerId, generateRandomPosition } from './utils/generators';
-import { collidesWithObstacle, collidesWithTank } from './utils/collisions';
+import { collidesWithBullet, collidesWithObstacle, collidesWithTank } from './utils/collisions';
 import { generateDestroyedPayload, generateLevelUpPayload, generatePlayerJoinedPayload } from './utils/signals';
 import { Tank } from './models/Tank';
 import { Obstacle } from './models/Obstacle';
@@ -56,6 +56,7 @@ export class Game {
         }
     }
 
+    // Bullet methods (refactor to a separate Bullet Handler class eventually)
     public addBullet(playerId: string): void {
         const player: Tank | undefined = this.gameState.gameObjects.tanks.get(playerId);
         if (player && Date.now() - player.lastShot > 1000) {
@@ -73,6 +74,16 @@ export class Game {
             player.lastShot = Date.now();
             this.broadcastGameState();
         }
+    }
+
+    private updateBullets(): void {
+        this.gameState.gameObjects.bullets.forEach((bullet: Bullet) => {
+            bullet.x += Math.cos(bullet.rotation) * 10;
+            bullet.y += Math.sin(bullet.rotation) * 10;
+            bullet.timeToLive -= 1;
+        });
+
+        this.gameState.gameObjects.bullets = this.gameState.gameObjects.bullets.filter((bullet: Bullet) => bullet.timeToLive > 0);
     }
 
     // Core Signal Sending Methods (should refactor to a separate Signal Gateway class eventually)
@@ -118,16 +129,28 @@ export class Game {
     }
 
     // Collision Detection Methods (should refactor to a separate Physics class eventually)
-    protected checkCollision(tank: Tank): boolean {
-        return this.checkCollisionWithObstacles(tank.x, tank.y, tank.width, tank.height) || this.checkCollisionWithTanks(tank.x, tank.y, tank.width, tank.height, tank.id);
+    private checkCollisionWithBullets(tank: Tank): boolean {
+        return this.gameState.gameObjects.bullets.some((bullet: Bullet) => this.checkCollisionWithBullet(tank, bullet));
     }
 
-    private checkCollisionWithObstacles(x: number, y: number, width: number, height: number): boolean {
-        return collidesWithObstacle(x, y, width, height, this.gameState.gameObjects.obstacles);
+    private checkCollisionWithTanks(tank: Tank): boolean {
+        return Array.from(this.gameState.gameObjects.tanks.values()).some((otherTank: Tank) => this.checkCollisionWithTank(tank, otherTank));
     }
 
-    private checkCollisionWithTanks(x: number, y: number, width: number, height: number, playerId: string): boolean {
-        return collidesWithTank(x, y, width, height, this.gameState.gameObjects.tanks, playerId);
+    private checkCollisionWithObstacles(tank: Tank): boolean {
+        return this.gameState.gameObjects.obstacles.some((obstacle: Obstacle) => this.checkCollisionWithObstacle(tank, obstacle));
+    }
+
+    private checkCollisionWithBullet(tank: Tank, bullet: Bullet): boolean {
+        return collidesWithBullet(tank, bullet);
+    }
+
+    private checkCollisionWithTank(tank: Tank, otherTank: Tank): boolean {
+        return collidesWithTank(tank, otherTank);
+    }
+
+    private checkCollisionWithObstacle(tank: Tank, obstacle: Obstacle): boolean {
+        return collidesWithObstacle(tank, obstacle);
     }
 
     // Map and Game Factory Methods
