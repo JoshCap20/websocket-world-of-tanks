@@ -9,7 +9,7 @@ const server = http.createServer(app);
 const wss = new WebSocketServer(server);
 
 // Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Error handling for server
 server.on('error', (error: NodeJS.ErrnoException) => {
@@ -25,4 +25,7 @@ server.on('error', (error: NodeJS.ErrnoException) => {
 // Start server
 server.listen(8080, () => {
   console.log("Server listening on port 8080. Connect to play.");
+  require('dns').lookup(require('os').hostname(), function (err: NodeJS.ErrnoException | null, address: string, family: number) {
+    console.log('Play with anyone on your network: ' + address + ':8080');
+  })
 });
