@@ -10,7 +10,19 @@ export class WebSocketServer {
 
     constructor(server: http.Server) {
         // TODO: Implement WebSocket compression: https://github.com/websockets/ws?tab=readme-ov-file#websocket-compression
-        this.wss = new WebSocket.Server({ server });
+        this.wss = new WebSocket.Server({
+            server, perMessageDeflate: {
+                zlibDeflateOptions: {
+                    chunkSize: 1024,
+                    memLevel: 1,
+                    level: 2,
+                },
+                zlibInflateOptions: {
+                    chunkSize: 10 * 1024
+                },
+                concurrencyLimit: 10
+            }
+        });
         this.game = new Game(this.wss);
         this.clientHeartbeats = new Map();
 
