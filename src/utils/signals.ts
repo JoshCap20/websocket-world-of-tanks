@@ -1,4 +1,4 @@
-import { DestroyedPayload, GameStatePayload, LevelUpPayload, Signal, SignalType } from '../models/Signals';
+import { DestroyedPayload, GameStatePayload, LevelUpPayload, PlayerJoinedPayload, Signal, SignalType } from '../models/Signals';
 import { GameState } from '../models/GameState';
 
 export const generateGameStatePayload = (gameState: GameState): Signal<GameStatePayload> => {
@@ -25,6 +25,15 @@ export const generateLevelUpPayload = (playerId: string, level: number): Signal<
         payload: {
             playerId,
             level
+        }
+    };
+}
+
+export const generatePlayerJoinedPayload = (playerId: string): Signal<PlayerJoinedPayload> => {
+    return {
+        type: SignalType.PLAYER_JOINED,
+        payload: {
+            playerId
         }
     };
 }

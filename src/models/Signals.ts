@@ -6,7 +6,8 @@ export enum SignalType {
     WARNING = 'WARNING',
     LEVEL_UP = 'LEVEL_UP',
     DESTROYED = 'DESTROYED',
-    GAME_STATE = 'GAME_STATE'
+    GAME_STATE = 'GAME_STATE',
+    PLAYER_JOINED = 'PLAYER_JOINED',
 }
 
 export interface Signal<T = any> {
@@ -25,4 +26,8 @@ export interface DestroyedPayload {
 
 export interface GameStatePayload {
     gameState: GameState;
+}
+
+export interface PlayerJoinedPayload {
+    playerId: string;
 }
