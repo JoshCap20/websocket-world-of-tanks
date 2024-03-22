@@ -21,6 +21,7 @@ export class SignalHandler {
                 break;
             case 'fire':
                 this.game.addBullet(data.playerId);
+                break;
             case 'disconnect':
                 this.game.removePlayer(data.playerId);
                 break;
