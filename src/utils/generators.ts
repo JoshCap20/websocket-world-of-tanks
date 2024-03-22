@@ -1,5 +1,6 @@
+import { GameState } from "../models/GameState";
 import { Obstacle } from "../models/Obstacle";
-import { collidesWithObstacle } from "./collisions";
+import { isValidSpawnPosition } from "./collisions";
 
 // Generator Methods
 export const generateRandomObstacles = (mapWidth: number, mapHeight: number): Obstacle[] => {
@@ -7,16 +8,16 @@ export const generateRandomObstacles = (mapWidth: number, mapHeight: number): Ob
     return [];
 };
 
-export const generateRandomPosition = (mapWidth: number, mapHeight: number, width: number, height: number, obstacles: Obstacle[]): { x: number, y: number } => {
+export const generateRandomPosition = (width: number, height: number, gameState: GameState): { x: number, y: number } => {
     let position = {
-        x: Math.random() * (mapWidth - width),
-        y: Math.random() * (mapHeight - height),
+        x: Math.random() * (gameState.mapSize.width - width),
+        y: Math.random() * (gameState.mapSize.height - height),
     };
 
-    while (!collidesWithObstacle(position.x, position.y, width, height, obstacles)) {
+    while (!isValidSpawnPosition(position.x, position.y, width, height, gameState)) {
         position = {
-            x: Math.random() * (mapWidth - width),
-            y: Math.random() * (mapHeight - height),
+            x: Math.random() * (gameState.mapSize.width - width),
+            y: Math.random() * (gameState.mapSize.height - height),
         };
     }
 

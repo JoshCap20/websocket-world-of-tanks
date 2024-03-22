@@ -2,7 +2,7 @@ import WebSocket, { Server } from 'ws';
 
 import { generateRandomObstacles, generatePlayerId, generateRandomPosition } from './utils/generators';
 import { collidesWith, collidesWithAnyBullet, collidesWithAnyObstacle, collidesWithAnyTank, collidesWithAnything } from './utils/collisions';
-import { generateDestroyedPayload, generateLevelUpPayload, generatePlayerJoinedPayload } from './utils/signals';
+import { generateDestroyedPayload, generateGameStatePayload, generateLevelUpPayload, generatePlayerJoinedPayload } from './utils/signals';
 import { Tank } from './models/Tank';
 import { Obstacle } from './models/Obstacle';
 import { Bullet } from './models/Bullet';
@@ -51,9 +51,6 @@ export class Game {
             player.y = data.y;
             player.rotation = data.rotation;
             player.lastShot = data.lastShot;
-            player.health = data.health;
-            player.kills = data.kills;
-            player.level = data.level;
 
             this.broadcastGameState();
         }
@@ -95,7 +92,7 @@ export class Game {
     }
 
     protected broadcastGameState(): void {
-        this.signalHandler.broadcast(JSON.stringify(this.gameState));
+        this.signalHandler.broadcast(JSON.stringify(generateGameStatePayload(this.gameState)));
     }
 
     protected broadcastPlayerLevelUp(player: Tank): void {
@@ -113,7 +110,7 @@ export class Game {
 
     // Tank Factory Method
     private generateTank(playerId: string): Tank {
-        const spawnPosition = generateRandomPosition(this.gameState.mapSize.width, this.gameState.mapSize.height, 50, 50, this.gameState.gameObjects.obstacles);
+        const spawnPosition = generateRandomPosition(50, 50, this.gameState);
         return {
             id: playerId,
             x: spawnPosition.x,
