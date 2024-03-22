@@ -1,4 +1,4 @@
-export interface Player {
+export interface Tank {
     id: string;
 
     // For Mapping
