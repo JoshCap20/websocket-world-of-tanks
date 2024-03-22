@@ -1,31 +1,46 @@
 import { Bullet } from '../models/Bullet';
+import { GameState } from '../models/GameState';
 import { Obstacle } from '../models/Obstacle';
+import { ICollidable } from '../models/Physics';
 import { Tank } from '../models/Tank';
 
 // Collision Detection Methods
-export const collidesWithObstacle = (tank: Tank, obstacle: Obstacle): boolean => {
+export const collidesWith = (a: ICollidable, b: ICollidable): boolean => {
     return (
-        tank.x < obstacle.x + obstacle.width &&
-        tank.x + tank.width > obstacle.x &&
-        tank.y < obstacle.y + obstacle.height &&
-        tank.y + tank.height > obstacle.y
+        a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y
     );
 }
 
-export const collidesWithTank = (tank: Tank, otherTank: Tank): boolean => {
+export const collidesWithAnyObstacle = (object: ICollidable, obstacles: Obstacle[]): boolean => {
+    return obstacles.some(obstacle => collidesWith(object, obstacle));
+}
+
+export const collidesWithAnyTank = (object: ICollidable, tanks: Tank[]): boolean => {
+    return tanks.some(tank => collidesWith(object, tank));
+}
+
+export const collidesWithAnyBullet = (object: ICollidable, bullets: Bullet[]): boolean => {
+    return bullets.some(bullet => collidesWith(object, bullet));
+}
+
+export const collidesWithAnything = (object: ICollidable, gameState: GameState): boolean => {
     return (
-        tank.x < otherTank.x + otherTank.width &&
-        tank.x + tank.width > otherTank.x &&
-        tank.y < otherTank.y + otherTank.height &&
-        tank.y + tank.height > otherTank.y
+        collidesWithAnyObstacle(object, gameState.gameObjects.obstacles) ||
+        collidesWithAnyTank(object, Array.from(gameState.gameObjects.tanks.values())) ||
+        collidesWithAnyBullet(object, gameState.gameObjects.bullets)
     );
 }
 
-export const collidesWithBullet = (tank: Tank, bullet: Bullet): boolean => {
+export const isValidSpawnPosition = (x: number, y: number, width: number, height: number, gameState: GameState): boolean => {
+    const spawnArea: ICollidable = { x, y, width, height };
     return (
-        tank.x < bullet.x + bullet.width &&
-        tank.x + tank.width > bullet.x &&
-        tank.y < bullet.y + bullet.height &&
-        tank.y + tank.height > bullet.y
+        x >= 0 &&
+        y >= 0 &&
+        x + width <= gameState.mapSize.width &&
+        y + height <= gameState.mapSize.height &&
+        !collidesWithAnything(spawnArea, gameState)
     );
 }
