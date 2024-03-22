@@ -13,6 +13,10 @@ export class WebSocketServer {
 
         this.wss.on('connection', (ws: WebSocket) => {
             this.game.addPlayer(ws);
+
+            ws.on('message', (message: string) => {
+                this.game.handleSignal(ws, message);
+            });
         });
     }
 }
