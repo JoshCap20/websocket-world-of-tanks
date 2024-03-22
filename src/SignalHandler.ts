@@ -17,16 +17,12 @@ export class SignalHandler {
 
         switch (data.type) {
             case 'update':
-                // this.game.updatePlayer(data.playerId, data);
+                this.game.updatePlayer(data.playerId, data);
                 break;
             case 'fire':
-                // this.game.addBullet(data.playerId, data);
-                break;
+                this.game.addBullet(data.playerId);
             case 'disconnect':
-                // this.game.removePlayer(data.playerId);
-                break;
-            case 'activatePlayer':
-                // this.game.activatePlayer(data.playerId);
+                this.game.removePlayer(data.playerId);
                 break;
         }
     }

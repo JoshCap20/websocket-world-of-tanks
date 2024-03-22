@@ -40,6 +40,41 @@ export class Game {
         this.gameState.gameObjects.tanks.delete(playerId);
     }
 
+    // TODO: Define model for data from frontend after thats redesigned
+    public updatePlayer(playerId: string, data: any): void {
+        const player: Tank | undefined = this.gameState.gameObjects.tanks.get(playerId);
+        if (player) {
+            player.x = data.x;
+            player.y = data.y;
+            player.rotation = data.rotation;
+            player.lastShot = data.lastShot;
+            player.health = data.health;
+            player.kills = data.kills;
+            player.level = data.level;
+
+            this.broadcastGameState();
+        }
+    }
+
+    public addBullet(playerId: string): void {
+        const player: Tank | undefined = this.gameState.gameObjects.tanks.get(playerId);
+        if (player && Date.now() - player.lastShot > 1000) {
+            const bullet: Bullet = {
+                x: player.x,
+                y: player.y,
+                height: player.height / 2,
+                width: player.width / 2,
+                rotation: player.rotation,
+                playerId: playerId,
+                timeToLive: 1000,
+            };
+            this.gameState.gameObjects.bullets.push(bullet);
+
+            player.lastShot = Date.now();
+            this.broadcastGameState();
+        }
+    }
+
     // Core Signal Sending Methods (should refactor to a separate Signal Gateway class eventually)
     public handleSignal(ws: WebSocket, message: string): void {
         this.signalHandler.handleSignal(ws, message);
@@ -112,7 +147,7 @@ export class Game {
             },
             gameObjects: {
                 tanks: new Map(),
-                bullets: new Map(),
+                bullets: new Array(),
                 obstacles: generateRandomObstacles(mapSize.width, mapSize.height),
             }
         };

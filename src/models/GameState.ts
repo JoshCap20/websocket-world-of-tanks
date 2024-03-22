@@ -14,6 +14,6 @@ export interface MapSize {
 
 export interface GameObjects {
     tanks: Map<string, Tank>;
-    bullets: Map<string, Bullet>;
+    bullets: Bullet[];
     obstacles: Obstacle[];
 }
