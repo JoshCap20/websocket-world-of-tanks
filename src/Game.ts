@@ -7,6 +7,7 @@ import { Tank } from './models/Tank';
 import { Obstacle } from './models/Obstacle';
 import { Bullet } from './models/Bullet';
 import { GameState } from './models/GameState';
+import { SignalHandler } from './SignalHandler';
 
 /*
 TODO:
@@ -15,12 +16,14 @@ TODO:
 
 
 export class Game {
-    private wss: Server;
+    private signalHandler: SignalHandler;
+
     private gameState: GameState;
     private aiTanks: string[];
 
     constructor(wss: Server) {
-        this.wss = wss;
+        this.signalHandler = new SignalHandler(this, wss);
+
         this.gameState = this.generateGameState();
         this.aiTanks = []; // IDs of AI tanks
     }
@@ -38,30 +41,24 @@ export class Game {
     }
 
     // Core Signal Sending Methods (should refactor to a separate Signal Gateway class eventually)
-    private unicast(ws: WebSocket, payload: string): void {
-        ws.send(payload);
-    }
-
-    private broadcast(payload: string): void {
-        this.wss.clients.forEach((client: WebSocket) => {
-            client.send(payload);
-        });
+    public handleSignal(ws: WebSocket, message: string): void {
+        this.signalHandler.handleSignal(ws, message);
     }
 
     protected broadcastGameState(): void {
-        this.broadcast(JSON.stringify(this.gameState));
+        this.signalHandler.broadcast(JSON.stringify(this.gameState));
     }
 
     protected broadcastPlayerLevelUp(player: Tank): void {
-        this.broadcast(JSON.stringify(generateLevelUpPayload(player.id, player.level)));
+        this.signalHandler.broadcast(JSON.stringify(generateLevelUpPayload(player.id, player.level)));
     }
 
     protected broadcastPlayerDeath(playerId: string): void {
-        this.broadcast(JSON.stringify(generateDestroyedPayload(playerId)));
+        this.signalHandler.broadcast(JSON.stringify(generateDestroyedPayload(playerId)));
     }
 
     protected unicastPlayerJoined(ws: WebSocket, playerId: string): void {
-        this.unicast(ws, JSON.stringify(generatePlayerJoinedPayload(playerId)));
+        this.signalHandler.unicast(ws, JSON.stringify(generatePlayerJoinedPayload(playerId)));
     }
 
 
