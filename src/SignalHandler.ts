@@ -33,7 +33,9 @@ export class SignalHandler {
 
     public broadcast(payload: string): void {
         this.wss.clients.forEach((client: WebSocket) => {
-            client.send(payload);
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(payload);
+            }
         });
     }
 }
